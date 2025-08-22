@@ -50,6 +50,11 @@
     align-items: center;
     background-color: rgba(23, 23, 23, 0.9);
     justify-content: center;
+    white-space: nowrap;
+
+    sup {
+      margin-left: 0.3rem;
+    }
 
     @supports ((-webkit-backdrop-filter: none) or (backdrop-filter: none)) {
       background: rgba(23, 23, 23, 0.9);
@@ -303,6 +308,7 @@
       position: relative;
       margin-left: 10px;
       padding-left: 10px;
+
       &:before {
         background-color: var(--white);
         content: '';

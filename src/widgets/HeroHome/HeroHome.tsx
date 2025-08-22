@@ -1,28 +1,16 @@
-import { useSelector } from 'react-redux';
-
-import { BRAND_NAME } from 'appConstants';
-import { Search, Particles } from 'components';
-import { networks } from 'config';
+import { Particles, Search } from 'components';
 import { useIsMainnet } from 'hooks';
-import { activeNetworkSelector } from 'redux/selectors';
-import { NetworkIdEnum } from 'types';
 import {
   AccountsStatsCard,
   BlockHeightStatsCard,
-  TransactionsStatsCard,
-  ValidatorsStatusCard,
   BlockProgressRing,
-  EpochProgressRing
+  EpochProgressRing,
+  TransactionsStatsCard,
+  ValidatorsStatusCard
 } from 'widgets';
 
 export const HeroHome = () => {
   const isMainnet = useIsMainnet();
-  const { id, name } = useSelector(activeNetworkSelector);
-  const explorerTitle =
-    (id === NetworkIdEnum.mainnet && networks.length === 1) ||
-    name?.toLowerCase() === BRAND_NAME.toLowerCase()
-      ? 'Explorer'
-      : `${name} Explorer`;
 
   return (
     <div className='hero-home card card-lg card-black'>
@@ -30,9 +18,10 @@ export const HeroHome = () => {
       <div className='card-body d-flex flex-column justify-content-between'>
         <div className='row'>
           <div className='col-lg-6'>
-            <h1 className='h2 mb-4 font-headings title'>
-              {BRAND_NAME} Blockchain {explorerTitle}
-            </h1>
+            <h1 className='h2 font-headings title'>MultiversX Explorer</h1>
+            <h2 className='h4 mb-4 font-headings title'>
+              Powered by Project X Kepler
+            </h2>
             <Search />
           </div>
         </div>

@@ -50,6 +50,7 @@
     "three": "0.174.0",
     "three-stdlib": "2.35.14",
     "ua-parser-js": "1.0.38",
+    "vite": "5.4.19",
     "yup": "0.32.11"
   },
   "scripts": {
@@ -64,6 +65,7 @@
     "build-internal": "yarn run copy-multiple-config & cross-env VITE_APP_SHARE_PREFIX=internal- VITE_APP_GA_ID=G-EFN7QYSMQS yarn run build",
     "build-next": "yarn run copy-multiple-config & cross-env VITE_APP_SHARE_PREFIX=next- VITE_APP_GA_ID=G-EFN7QYSMQS yarn run build",
     "build": "cross-env VITE_APP_CACHE_BUST=$(git rev-parse --short HEAD || echo 'local') vite build && yarn version:make",
+    "build-cloudflare": "VITE_APP_SHARE_PREFIX= VITE_APP_GA_ID= yarn run copy-mainnet-config & yarn run build",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "copy-placeholder-config": "run-script-os",
@@ -123,7 +125,6 @@
     "run-script-os": "1.1.6",
     "sass": "1.89.2",
     "typescript": "5.9.2",
-    "vite": "5.4.19",
     "vite-plugin-node-polyfills": "0.22.0",
     "vite-plugin-svgr": "4.3.0",
     "vite-tsconfig-paths": "5.1.3"
@@ -141,5 +142,6 @@
     ">0.2%",
     "not dead",
     "not op_mini all"
-  ]
+  ],
+  "packageManager": "yarn@3.4.1+sha512.a333bf9c2557d71f5ba87dd1446cde24bb9c35301ec29dd2baba577b3f9d1ab61348b66a1324de9088c40a996c5b9203794da8bf14cab9fae6a6eccc00cb8078"
 }

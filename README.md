@@ -1,11 +1,12 @@
-# MultiversX Explorer
+# MultiversX Explorer for Project X Kepler
 
 ![explorer.multiversx.com](https://github.com/multiversx/mx-explorer-dapp/blob/main/public/share.jpg)
 
 This project was bootstrapped with [Vite](https://vitejs.dev/guide/).
 
 ## Tests
- [![E2E tests](https://github.com/multiversx/mx-explorer-dapp/actions/workflows/pre-merge-main-e2e-tests.yml/badge.svg)](https://github.com/multiversx/mx-explorer-dapp/actions/workflows/pre-merge-main-e2e-tests.yml)
+
+[![E2E tests](https://github.com/multiversx/mx-explorer-dapp/actions/workflows/pre-merge-main-e2e-tests.yml/badge.svg)](https://github.com/multiversx/mx-explorer-dapp/actions/workflows/pre-merge-main-e2e-tests.yml)
 
 ## Deployments
 
@@ -22,10 +23,13 @@ This project was bootstrapped with [Vite](https://vitejs.dev/guide/).
 
 1. run `yarn` in the project directory.
 2. run `npm run start-devnet` fot the `Devnet` network.
-3. optionally make edits to `networks` or other configurations found in newly created `index.ts` in the `src/config` folder.
+3. optionally make edits to `networks` or other configurations found in newly created `index.ts` in the `src/config`
+   folder.
 
-- One can use any of the existing network setups by running one of the `npm run start-*` scripts available in the `package.json` file.
-- Or, alternatively copy one of the config files ( for ex. `/src/config/config.devnet.ts` ) to a new file `/src/config/index.ts`
+- One can use any of the existing network setups by running one of the `npm run start-*` scripts available in the
+  `package.json` file.
+- Or, alternatively copy one of the config files ( for ex. `/src/config/config.devnet.ts` ) to a new file
+  `/src/config/index.ts`
 
 ## Available Scripts
 
@@ -58,7 +62,8 @@ Use the Free version of the Fontawesome Icons ( used by default ) ( no paid plan
 Prepare the Pro version of the Fontawesome Icons ( a paid plan for Fontawesome is needed )
 If you already have a fontawesome accessToken, you will either have to either:
 
-- set a `.npmrc` file with only the `_authToken`, without the `registry` ( the `.npmrc` file is already added in the `.gitignore` file)
+- set a `.npmrc` file with only the `_authToken`, without the `registry` ( the `.npmrc` file is already added in the
+  `.gitignore` file)
 - run `npm config set "//npm.fontawesome.com/:_authToken" FONT-AWESOME-PACKAGE-TOKEN`
 
 See more on Fontawesome's [Using A Package Manager](https://fontawesome.com/docs/web/setup/packages) page.
@@ -71,11 +76,13 @@ To learn React, check out the [React documentation](https://reactjs.org/).
 
 ## Roadmap
 
-See the [open issues](https://github.com/multiversx/mx-explorer-dapp/issues) for a list of proposed features (and known issues).
+See the [open issues](https://github.com/multiversx/mx-explorer-dapp/issues) for a list of proposed features (and known
+issues).
 
 ## Contributing
 
-Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any
+contributions you make are **greatly appreciated**.
 
 One can contribute by creating _pull requests_, or by opening _issues_ for discovered bugs or desired features.
 

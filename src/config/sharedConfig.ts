@@ -1,11 +1,11 @@
-import { object, string, boolean } from 'yup';
+import { boolean, object, string } from 'yup';
 
 import {
   DECIMALS,
+  DEFAULT_GAS_PRICE,
   GAS_LIMIT,
   GAS_PER_DATA_BYTE,
-  GAS_PRICE_MODIFIER,
-  DEFAULT_GAS_PRICE
+  GAS_PRICE_MODIFIER
 } from 'lib';
 import { NetworkUrlType } from 'types/network.types';
 
@@ -37,23 +37,7 @@ export const DEFAULT_HOSTNAME =
 
 export const hasExtraNetworks = true;
 
-export const links: NetworkUrlType[] = [
-  {
-    id: 'mainnet',
-    name: 'Mainnet',
-    url: 'https://explorer.multiversx.com'
-  },
-  {
-    id: 'testnet',
-    name: 'Testnet',
-    url: 'https://testnet-explorer.multiversx.com'
-  },
-  {
-    id: 'devnet',
-    name: 'Devnet',
-    url: 'https://devnet-explorer.multiversx.com'
-  }
-];
+export const links: NetworkUrlType[] = [];
 
 export const allApps = (apps?: AppLinksType[]): AppLinksType[] => {
   const baseApps = [
@@ -70,7 +54,7 @@ export const allApps = (apps?: AppLinksType[]): AppLinksType[] => {
     {
       id: 'explorer',
       name: 'Explorer', // navbar title
-      url: 'http://explorer.multiversx.com'
+      url: 'http://explorer.projectx.mx'
     },
     {
       id: 'xexchange',

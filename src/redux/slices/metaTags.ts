@@ -7,7 +7,7 @@ import { MetaTagsType } from 'types/metaTags.types';
 
 const DEFAULT_TITLE = `${BRAND_NAME}${
   SHARE_PREFIX ? ` ${capitalize(SHARE_PREFIX)}` : ''
-} Explorer`;
+} Explorer (Kepler)`;
 const DEFAULT_DESCRIPTION =
   'A highly scalable, fast and secure blockchain platform for distributed apps, enterprise use cases and the new internet economy.';
 const DEFAULT_PREVIEW = `https://${

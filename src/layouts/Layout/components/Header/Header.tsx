@@ -1,4 +1,4 @@
-import { useState, MouseEvent, useEffect } from 'react';
+import { MouseEvent, useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import classNames from 'classnames';
 
@@ -6,7 +6,7 @@ import { BRAND_NAME } from 'appConstants';
 import MultiversXLogo from 'assets/img/logo-full.svg';
 import MultiversXSymbol from 'assets/img/symbol.svg';
 import { NetworkLink } from 'components';
-import { useIsMainnet, useGetExplorerTitle } from 'hooks';
+import { useGetExplorerTitle, useIsMainnet } from 'hooks';
 import { faGrid, faGrid2 } from 'icons/solid';
 import { EcosystemMenu } from './components/EcosystemMenu';
 import { Links } from './components/Links';
@@ -84,6 +84,7 @@ export const Header = (props: HeaderPropsType) => {
               <span className='header-title'>{explorerTitle}</span>
             </span>
           )}
+          <sup>Kepler</sup>
         </NetworkLink>
       </div>
 
