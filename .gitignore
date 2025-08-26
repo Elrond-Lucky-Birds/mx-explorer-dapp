@@ -18,6 +18,9 @@ yalc.lock
 dist
 dist-ssr
 *.local
+.yarnrc.yml
+/.yarn
+tsconfig.tsbuildinfo
 
 # Testing
 /coverage
