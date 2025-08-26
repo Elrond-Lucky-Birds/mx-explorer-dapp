@@ -7,13 +7,13 @@ import {
   NATIVE_TOKEN_IDENTIFIER
 } from 'appConstants';
 import {
-  urlBuilder,
-  isHash,
-  isContract,
   addressIsBech32,
   bech32,
   formatHerotag,
-  isProof
+  isContract,
+  isHash,
+  isProof,
+  urlBuilder
 } from 'helpers';
 import { useAdapter, useGetHrp, useNetworkRoute } from 'hooks';
 import { Address } from 'lib';
