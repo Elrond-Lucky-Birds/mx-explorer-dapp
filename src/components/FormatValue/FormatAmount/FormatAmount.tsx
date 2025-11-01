@@ -2,7 +2,11 @@ import BigNumber from 'bignumber.js';
 import classNames from 'classnames';
 import { useSelector } from 'react-redux';
 
-import { ELLIPSIS } from 'appConstants';
+import {
+  ELLIPSIS,
+  NATIVE_TOKEN_IDENTIFIER,
+  NATIVE_TOKEN_SEARCH_LABEL
+} from 'appConstants';
 import { NativeTokenSymbol } from 'components';
 import { DECIMALS, DIGITS } from 'config';
 import { formatAmount, isEgldToken } from 'helpers';
@@ -29,13 +33,16 @@ export interface FormatAmountUIType extends WithClassnameType {
   superSuffix?: boolean;
   showUsdValue?: boolean;
   decimalOpacity?: boolean;
+  isAnimated?: boolean;
+  showEllipsisIfZero?: boolean;
   usd?: string | number;
 }
 
 export const FormatAmount = (props: FormatAmountUIType) => {
-  const { egldLabel } = useSelector(activeNetworkSelector);
-  const { isFetched, unprocessed } = useSelector(economicsSelector);
+  const { egldLabel: networkEgldLabel } = useSelector(activeNetworkSelector);
+  const { isDataReady, unprocessed } = useSelector(economicsSelector);
   const {
+    egldLabel,
     value,
     className,
     token,
@@ -48,8 +55,11 @@ export const FormatAmount = (props: FormatAmountUIType) => {
     showTooltip = true,
     usd
   } = props;
+  const label = egldLabel ?? networkEgldLabel;
+  const displayLabel =
+    label === NATIVE_TOKEN_IDENTIFIER ? NATIVE_TOKEN_SEARCH_LABEL : label;
   const dataTestId = props['data-testid'] ?? 'formatAmountComponent';
-  const isCustomIcon = !isEgldToken(egldLabel);
+  const isCustomIcon = !isEgldToken(networkEgldLabel);
 
   if (!stringIsInteger(value)) {
     return (
@@ -86,14 +96,14 @@ export const FormatAmount = (props: FormatAmountUIType) => {
     showUsdValue &&
     !isZero &&
     (showSymbol || showLabel) &&
-    ((isFetched && unprocessed.price) || (usd && !token));
+    ((isDataReady && unprocessed.price) || (usd && !token));
 
   return (
     <FormatDisplayValue
       {...props}
       formattedValue={formattedValue}
       completeValue={completeValue}
-      label={egldLabel}
+      label={displayLabel}
       data-testid={dataTestId}
       showSymbol={showSymbol}
       showLastNonZeroDecimal={showLastNonZeroDecimal}

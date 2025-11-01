@@ -1,41 +1,42 @@
-import { PAGE_SIZE, TIMEOUT, TRANSACTIONS_TABLE_FIELDS } from 'appConstants';
+import {
+  LATEST_BLOCKS_FIELDS,
+  PAGE_SIZE,
+  TRANSACTIONS_TABLE_FIELDS
+} from 'appConstants';
 import {
   AccountRolesTypeEnum,
-  ExchangePriceRangeEnum,
   GetAccountType,
-  GetEventsType
+  GetEventsType,
+  ExchangePriceRangeEnum
 } from 'types';
 import {
   BaseApiType,
-  GetAccountsType,
   GetBlocksType,
-  GetCollectionsType,
-  GetIdentitiesType,
-  GetNftsType,
+  GetTransactionsType,
   GetNodesType,
   GetProvidersType,
+  GetCollectionsType,
+  GetNftsType,
   GetTokensType,
-  GetTransactionsInPoolType,
-  GetTransactionsType
+  GetAccountsType,
+  GetIdentitiesType,
+  GetTransactionsInPoolType
 } from 'types/adapter.types';
 
 import {
-  getCollectionsParams,
-  getEventsParams,
-  getNftsParams,
-  getNodeParams,
-  getPageParams,
-  getProviderParams,
   getShardAndEpochParams,
-  getTokensParams,
-  getTransactionsInPoolParams,
   getTransactionsParams,
-  processBlocks
+  getNodeParams,
+  getProviderParams,
+  getTokensParams,
+  getCollectionsParams,
+  getNftsParams,
+  getTransactionsInPoolParams,
+  getPageParams,
+  getEventsParams,
+  getBlocksParams
 } from './helpers';
 import { useAdapterConfig } from './useAdapterConfig';
-import { apiAdapter } from './api/apiAdapter';
-import { useSelector } from 'react-redux';
-import { activeNetworkSelector } from 'redux/selectors';
 
 export const useAdapter = () => {
   const {
@@ -50,8 +51,6 @@ export const useAdapter = () => {
     growthApi
   } = useAdapterConfig();
 
-  const { apiAddress } = useSelector(activeNetworkSelector);
-
   return {
     /* Homepage */
 
@@ -60,128 +59,32 @@ export const useAdapter = () => {
         url: '/blocks',
         params: {
           size,
-          fields: [
-            'hash',
-            'nonce',
-            'shard',
-            'size',
-            'sizeTxs',
-            'timestamp',
-            'txCount'
-          ].join(',')
+          fields: LATEST_BLOCKS_FIELDS.join(',')
         }
       }),
+
     getLatestTransactions: ({
       size = 5,
       withUsername = true
-    }: GetTransactionsType) => {
-      const wrap = async (asyncRequest: () => Promise<any>) => {
-        try {
-          const { data } = await asyncRequest();
-          return {
-            data,
-            success: data !== undefined
-          };
-        } catch (err) {
-          return {
-            success: false
-          };
+    }: GetTransactionsType) =>
+      provider({
+        url: '/transactions',
+        params: {
+          size,
+          withUsername,
+          fields: TRANSACTIONS_TABLE_FIELDS.join(',')
         }
-      };
-
-      return wrap(() =>
-        apiAdapter.getTransactionsWithHerotag({
-          baseUrl: apiAddress || '',
-          timeout: TIMEOUT,
-          params: {
-            size,
-            withUsername,
-            fields: TRANSACTIONS_TABLE_FIELDS.join(',')
-          }
-        })
-      );
-    },
+      }),
 
     /* Blocks */
 
-    getBlock: async (blockId: string) => {
-      try {
-        const { data: block, success } = await provider({
-          url: `/blocks/${blockId}`
-        });
+    getBlock: (blockId: string) => provider({ url: `/blocks/${blockId}` }),
 
-        let nextHash;
-        try {
-          const { data } = await provider({
-            url: '/blocks',
-            params: {
-              nonce: block.nonce + 1,
-              shard: block.shard
-            }
-          });
-
-          nextHash = data[0] ? data[0].hash : '';
-        } catch {
-          nextHash = '';
-        }
-
-        return {
-          block,
-          nextHash,
-          success
-        };
-      } catch {
-        return { success: false };
-      }
-    },
-
-    getBlocks: async ({
-      page,
-      size,
-      shard,
-      epoch,
-      proposer,
-      withProposerIdentity
-    }: GetBlocksType) => {
-      try {
-        const { data: blocks, success } = await provider({
-          url: '/blocks',
-          params: {
-            ...getPageParams({ page, size }),
-            ...(proposer ? { proposer } : {}),
-            ...(withProposerIdentity ? { withProposerIdentity } : {}),
-            ...getShardAndEpochParams(shard, epoch),
-            fields: [
-              'hash',
-              'nonce',
-              'shard',
-              'size',
-              'sizeTxs',
-              'timestamp',
-              'txCount',
-              'gasConsumed',
-              'gasRefunded',
-              'gasPenalized',
-              'maxGasLimit',
-              'proposer',
-              'proposerIdentity'
-            ].join(',')
-          }
-        });
-        if (success) {
-          return {
-            data: processBlocks(blocks),
-            success
-          };
-        } else {
-          return { success: false };
-        }
-      } catch (err) {
-        return {
-          success: false
-        };
-      }
-    },
+    getBlocks: (params: GetBlocksType) =>
+      provider({
+        url: '/blocks',
+        params: getBlocksParams(params)
+      }),
 
     getBlocksCount: ({ shard, epoch }: GetBlocksType) =>
       provider({
@@ -196,53 +99,14 @@ export const useAdapter = () => {
 
     /* Transactions */
 
-    getTransaction: (transactionId: string) => {
-      const wrap = async (asyncRequest: () => Promise<any>) => {
-        try {
-          const { data } = await asyncRequest();
-          return {
-            data,
-            success: data !== undefined
-          };
-        } catch (err) {
-          return {
-            success: false
-          };
-        }
-      };
+    getTransaction: (transactionId: string) =>
+      provider({ url: `/transactions/${transactionId}` }),
 
-      return wrap(() =>
-        apiAdapter.getTransactionWithHerotag({
-          baseUrl: apiAddress || '',
-          transactionId,
-          timeout: TIMEOUT
-        })
-      );
-    },
-
-    getTransactions: (params: GetTransactionsType) => {
-      const wrap = async (asyncRequest: () => Promise<any>) => {
-        try {
-          const { data } = await asyncRequest();
-          return {
-            data,
-            success: data !== undefined
-          };
-        } catch (err) {
-          return {
-            success: false
-          };
-        }
-      };
-
-      return wrap(() =>
-        apiAdapter.getTransactionsWithHerotag({
-          baseUrl: apiAddress || '',
-          timeout: TIMEOUT,
-          params: getTransactionsParams(params)
-        })
-      );
-    },
+    getTransactions: (params: GetTransactionsType) =>
+      provider({
+        url: '/transactions',
+        params: getTransactionsParams(params)
+      }),
 
     getTransactionsCount: (params: GetTransactionsType) =>
       provider({
@@ -250,29 +114,11 @@ export const useAdapter = () => {
         params: getTransactionsParams({ isCount: true, ...params })
       }),
 
-    getTransfers: (params: GetTransactionsType) => {
-      const wrap = async (asyncRequest: () => Promise<any>) => {
-        try {
-          const { data } = await asyncRequest();
-          return {
-            data,
-            success: data !== undefined
-          };
-        } catch (err) {
-          return {
-            success: false
-          };
-        }
-      };
-
-      return wrap(() =>
-        apiAdapter.getTransfersWithHerotag({
-          baseUrl: apiAddress || '',
-          timeout: TIMEOUT,
-          params: getTransactionsParams(params)
-        })
-      );
-    },
+    getTransfers: (params: GetTransactionsType) =>
+      provider({
+        url: '/transfers',
+        params: getTransactionsParams(params)
+      }),
 
     getTransfersCount: (params: GetTransactionsType) =>
       provider({
@@ -326,30 +172,8 @@ export const useAdapter = () => {
 
     /* Account */
 
-    getAccount: ({ address, ...rest }: GetAccountType) => {
-      const wrap = async (asyncRequest: () => Promise<any>) => {
-        try {
-          const { data } = await asyncRequest();
-          return {
-            data,
-            success: data !== undefined
-          };
-        } catch (err) {
-          return {
-            success: false
-          };
-        }
-      };
-
-      return wrap(() =>
-        apiAdapter.getAccountWithHerotag({
-          baseUrl: apiAddress || '',
-          address,
-          timeout: TIMEOUT,
-          params: rest
-        })
-      );
-    },
+    getAccount: ({ address, ...rest }: GetAccountType) =>
+      provider({ url: `/accounts/${address}`, params: rest }),
 
     getAccounts: ({
       page,
@@ -378,32 +202,13 @@ export const useAdapter = () => {
     getAccountsCount: (params: GetAccountsType) =>
       provider({ url: '/accounts/c', params }),
 
-    getAccountTransfers: ({ address, ...rest }: GetTransactionsType) => {
-      const wrap = async (asyncRequest: () => Promise<any>) => {
-        try {
-          const { data } = await asyncRequest();
-          return {
-            data,
-            success: data !== undefined
-          };
-        } catch (err) {
-          return {
-            success: false
-          };
-        }
-      };
-
-      return wrap(() =>
-        apiAdapter.getAccountTransfersWithHerotag({
-          baseUrl: apiAddress || '',
-          address: address || '',
-          timeout: TIMEOUT,
-          params: getTransactionsParams({
-            ...rest
-          })
+    getAccountTransfers: ({ address, ...rest }: GetTransactionsType) =>
+      provider({
+        url: `/accounts/${address}/transfers`,
+        params: getTransactionsParams({
+          ...rest
         })
-      );
-    },
+      }),
 
     getAccountTransfersCount: ({ address, ...rest }: GetTransactionsType) =>
       provider({
@@ -866,29 +671,10 @@ export const useAdapter = () => {
 
     getEconomics: () => getEconomics({ url: '/economics' }),
 
-    getUsername: (username: string) => {
-      const wrap = async (asyncRequest: () => Promise<any>) => {
-        try {
-          const { data } = await asyncRequest();
-          return {
-            data,
-            success: data !== undefined
-          };
-        } catch (err) {
-          return {
-            success: false
-          };
-        }
-      };
-
-      return wrap(() =>
-        apiAdapter.getUsernameWithHerotag({
-          baseUrl: apiAddress || '',
-          username,
-          timeout: TIMEOUT
-        })
-      );
-    },
+    getUsername: (username: string) =>
+      provider({
+        url: `/usernames/${username}`
+      }),
 
     getMarkers: (baseUrl: string) =>
       provider({
@@ -925,10 +711,22 @@ export const useAdapter = () => {
       provider({ baseUrl: `${growthApi}/explorer/headers`, url }),
 
     // Network Config
-    getNetworkConfig: (baseUrl: string) =>
+    getDappConfig: (baseUrl?: string) =>
       provider({
-        baseUrl,
-        url: '/dapp/config'
+        url: '/dapp/config',
+        ...(baseUrl ? { baseUrl } : {})
+      }),
+
+    getNetworkConfig: (baseUrl?: string) =>
+      provider({
+        url: '/network/config',
+        ...(baseUrl ? { baseUrl } : {})
+      }),
+
+    getWebsocketConfig: (baseUrl?: string) =>
+      provider({
+        url: '/websocket/config',
+        ...(baseUrl ? { baseUrl } : {})
       })
   };
 };

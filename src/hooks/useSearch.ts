@@ -7,13 +7,14 @@ import {
   NATIVE_TOKEN_IDENTIFIER
 } from 'appConstants';
 import {
+  urlBuilder,
+  isHash,
+  isContract,
   addressIsBech32,
   bech32,
   formatHerotag,
-  isContract,
-  isHash,
   isProof,
-  urlBuilder
+  isEgldToken
 } from 'helpers';
 import { useAdapter, useGetHrp, useNetworkRoute } from 'hooks';
 import { Address } from 'lib';
@@ -69,7 +70,9 @@ export const useSearch = (hash: string) => {
         validHashChars.test(searchHash.split('-')[1]) === true;
       const isUsername =
         searchHash.startsWith('@') || searchHash.endsWith(HEROTAG_SUFFIX);
-      const isNativeToken = NATIVE_TOKEN_IDENTIFIER === searchHash;
+      const isNativeToken =
+        NATIVE_TOKEN_IDENTIFIER.toLowerCase() === searchHash.toLowerCase() &&
+        isEgldToken(egldLabel);
 
       let isPubKeyAccount = false;
       try {

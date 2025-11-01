@@ -5,6 +5,7 @@ import TransactionActionBlock from './TransactionActionBlock';
 
 export * from './AccountName';
 export * from './AccountsTable';
+export * from './Badges';
 export * from './BlockGasUsed';
 export * from './BlocksTable';
 export * from './Cards';
@@ -43,7 +44,9 @@ export * from './Overlay';
 export * from './Pager';
 export * from './PageSize';
 export * from './PageState';
+export * from './PreviewPanel';
 export * from './Particles';
+export * from './PauseRefreshButton';
 export * from './PercentageBar';
 export * from './PercentageLed';
 export * from './ProgressRing';
