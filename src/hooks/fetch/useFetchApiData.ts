@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   PAGE_SIZE,
@@ -22,7 +22,9 @@ export interface FetchApiDataProps {
   event?: WebsocketEventsEnum;
   websocketConfig?: Record<string, any>;
   urlParams?: Record<string, any>;
+  uuid?: string;
   isRefreshPaused?: boolean;
+  isCustomUpdate?: boolean;
 }
 
 export const useFetchApiData = ({
@@ -35,15 +37,27 @@ export const useFetchApiData = ({
   event,
   websocketConfig = {},
   urlParams = {},
+  uuid = '',
+  isCustomUpdate,
   isRefreshPaused = false
 }: FetchApiDataProps) => {
-  const { page, size } = useGetPage();
+  const { page, size, searchAfter } = useGetPage();
   const [dataChanged, setDataChanged] = useState(false);
 
-  let isCalled = false;
+  const isFetchingRef = useRef(false);
+  const abortControllerRef = useRef<AbortController | undefined>(undefined);
+
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
 
   const hasUrlParams =
-    Object.keys(urlParams).length > 0 || page !== 1 || size !== PAGE_SIZE;
+    Object.keys(urlParams).length > 0 ||
+    page !== 1 ||
+    size !== PAGE_SIZE ||
+    searchAfter !== undefined;
 
   const isPaused = Boolean(hasUrlParams || isRefreshPaused);
 
@@ -61,20 +75,23 @@ export const useFetchApiData = ({
   useRegisterWebsocketListener({
     subscription,
     event,
-    config: { from: 0, size: PAGE_SIZE, ...websocketConfig },
+    uuid,
+    config: {
+      ...(isCustomUpdate ? {} : { from: 0, size: PAGE_SIZE }),
+      ...websocketConfig
+    },
     onWebsocketEvent,
     isPaused
   });
 
   const fetchData = useCallback(
     (paramsChange = false) => {
-      if (isCalled) {
+      if (isFetchingRef.current) {
         return;
       }
 
       if (subscription && websocketActiveSubscriptions.has(subscription)) {
         if (Boolean(hasUrlParams || isRefreshPaused)) {
-          websocketConnection?.instance?.off(event);
           websocketActiveSubscriptions.delete(subscription);
         }
         return;
@@ -84,24 +101,40 @@ export const useFetchApiData = ({
         return;
       }
 
-      isCalled = true;
+      isFetchingRef.current = true;
 
       if (hasUrlParams && paramsChange) {
         setDataChanged(true);
       }
 
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+      const { signal } = controller;
+
       const promises = [
         dataPromise({
-          ...filters
+          ...filters,
+          signal
         }),
-        ...(dataCountPromise ? [dataCountPromise({ ...filters })] : [])
+        ...(dataCountPromise ? [dataCountPromise({ ...filters, signal })] : [])
       ];
 
       Promise.all(promises)
-        .then(onApiData)
+        .then((response) => {
+          if (signal.aborted) {
+            return;
+          }
+
+          onApiData(response);
+        })
         .finally(() => {
+          isFetchingRef.current = false;
+
+          if (signal.aborted) {
+            return;
+          }
+
           if (paramsChange) {
-            isCalled = false;
             setDataChanged(false);
           }
         });
@@ -111,9 +144,9 @@ export const useFetchApiData = ({
       websocketActiveSubscriptions,
       subscription,
       hasUrlParams,
-      isCalled,
       isRefreshPaused,
-      onApiData
+      onApiData,
+      filters
     ]
   );
 

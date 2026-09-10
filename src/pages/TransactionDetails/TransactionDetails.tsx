@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router';
 
 import { Loader, PageState } from 'components';
 import { isHash, urlBuilder } from 'helpers';
@@ -11,7 +11,7 @@ import {
   useNetworkRoute
 } from 'hooks';
 import { faExchangeAlt } from 'icons/regular';
-import { refreshSelector } from 'redux/selectors';
+import { refreshTimestampSelector } from 'redux/selectors';
 import { transactionsRoutes } from 'routes';
 import { TransactionType, TransactionApiStatusEnum } from 'types';
 
@@ -25,7 +25,7 @@ export const TransactionDetails = () => {
   const activeRoute = useActiveRoute();
   const { id, order } = useGetTransactionUrlHashParams();
 
-  const { timestamp } = useSelector(refreshSelector);
+  const timestamp = useSelector(refreshTimestampSelector);
   const { getTransaction, getScResult } = useAdapter();
 
   const [transaction, setTransaction] = useState<TransactionType | undefined>();
@@ -39,9 +39,8 @@ export const TransactionDetails = () => {
       let originalTxHash = data?.originalTxHash;
 
       if (!success && !data) {
-        const { data: scData, success: scSuccess } = await getScResult(
-          transactionId
-        );
+        const { data: scData, success: scSuccess } =
+          await getScResult(transactionId);
         if (scSuccess) {
           originalTxHash = scData?.originalTxHash;
         }

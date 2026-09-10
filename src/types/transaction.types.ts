@@ -43,6 +43,7 @@ export interface TransactionType {
   results?: TransactionSCResultType[];
   operations?: TransactionOperationType[];
   innerTransactions?: TransactionInnerType[];
+  searchAfter?: string;
 }
 
 // TRANSACTION SC RESULTS
@@ -65,6 +66,7 @@ export interface TransactionSCResultType {
   senderAssets?: AccountAssetType;
   receiverAssets?: AccountAssetType;
   miniBlockHash?: string;
+  searchAfter?: string;
 }
 
 export interface TransactionSCResultLogType {
@@ -126,6 +128,7 @@ export enum TransactionFiltersEnum {
   receiverShard = 'receiverShard',
   sender = 'sender',
   receiver = 'receiver',
+  senderOrReceiver = 'senderOrReceiver',
   method = 'function',
   before = 'before',
   after = 'after',
@@ -135,7 +138,8 @@ export enum TransactionFiltersEnum {
   transactionsInPoolType = 'type',
   hashes = 'hashes',
   isRelayed = 'isRelayed',
-  relayer = 'relayer'
+  relayer = 'relayer',
+  address = 'address'
 }
 
 // Avoid issues with differences between methods and actions
@@ -165,6 +169,7 @@ export enum TransactionMethodsEnum {
   enterFarmAndLockRewardsProxy = 'enterFarmAndLockRewardsProxy',
   exitFarm = 'exitFarm',
   exitFarmProxy = 'exitFarmProxy',
+  // eslint-disable-next-line  @typescript-eslint/no-duplicate-enum-values
   claimRewards = 'claimRewards',
   claimRewardsProxy = 'claimRewardsProxy',
   compoundRewards = 'compoundRewards',
@@ -280,6 +285,11 @@ export interface TransactionSliceType extends SliceType {
   transactionsCount: number | typeof ELLIPSIS;
 }
 
+export interface CustomTransactionSliceType extends TransactionSliceType {
+  uuid?: string;
+  clearExisting?: boolean;
+}
+
 export interface TransactionInPoolSliceType extends SliceType {
   transactionsInPool: UITransactionInPoolType[];
   transactionsInPoolCount: number | typeof ELLIPSIS;
@@ -374,6 +384,10 @@ export interface TransactionUnwrapperType {
   value?: string;
   providerName?: string;
   providerAvatar?: string;
+  description?: string;
+  tooltip?: string;
+  externalLink?: string;
+  isWarning?: boolean;
 }
 
 export enum TransactionActionEnum {
@@ -402,6 +416,7 @@ export enum TransactionActionEnum {
   enterFarmAndLockRewardsProxy = 'enterFarmAndLockRewardsProxy',
   exitFarm = 'exitFarm',
   exitFarmProxy = 'exitFarmProxy',
+  // eslint-disable-next-line  @typescript-eslint/no-duplicate-enum-values
   claimRewards = 'claimRewards',
   claimRewardsProxy = 'claimRewardsProxy',
   compoundRewards = 'compoundRewards',
@@ -428,7 +443,8 @@ export enum TransactionActionCategoryEnum {
   esdtNft = 'esdtNft',
   mex = 'mex',
   stake = 'stake',
-  scCall = 'scCall'
+  scCall = 'scCall',
+  deprecatedRelayedV1V2 = 'deprecatedRelayedV1V2'
 }
 
 // TRANSACTION OPERATION

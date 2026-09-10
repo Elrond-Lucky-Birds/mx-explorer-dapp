@@ -7,12 +7,15 @@ import { setTransactions } from 'redux/slices';
 import { TransactionType } from 'types';
 import { FetchApiDataProps, useFetchApiData } from './useFetchApiData';
 
-export interface FetchTransactionsProps
-  extends Omit<FetchApiDataProps, 'onApiData'> {
+export interface FetchTransactionsProps extends Omit<
+  FetchApiDataProps,
+  'onApiData'
+> {
   hasMaxTransactionsSize?: boolean;
+  uuid?: string;
 }
 
-interface TransactionsWebsocketResponseType {
+export interface TransactionsWebsocketResponseType {
   transactions: TransactionType[];
   transactionsCount: number;
 }
@@ -20,7 +23,7 @@ interface TransactionsWebsocketResponseType {
 export const useFetchTransactions = (props: FetchTransactionsProps) => {
   const dispatch = useDispatch();
   const transactionFilters = useGetTransactionFilters();
-  const { page, size } = useGetPage();
+  const { page, size, searchAfter } = useGetPage();
 
   const { hasMaxTransactionsSize, dataCountPromise, filters, websocketConfig } =
     props;
@@ -68,6 +71,7 @@ export const useFetchTransactions = (props: FetchTransactionsProps) => {
     filters: {
       page,
       size: maxTransactionsSize,
+      searchAfter,
       ...transactionFilters,
       ...filters
     },

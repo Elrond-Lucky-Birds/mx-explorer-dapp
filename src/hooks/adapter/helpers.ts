@@ -31,6 +31,7 @@ export const getAccountParams = (address?: string) =>
 export function getTransactionsParams({
   page,
   size,
+  searchAfter,
   order,
   fields = TRANSACTIONS_TABLE_FIELDS.join(','),
 
@@ -67,7 +68,7 @@ export function getTransactionsParams({
     ...(isCount
       ? {}
       : {
-          ...getPageParams({ page, size }),
+          ...getPageParams({ page, size, searchAfter }),
           ...(fields ? { fields } : {}),
           ...(order ? { order } : {}),
           ...(withScResults ? { withScResults } : {}),
@@ -102,6 +103,7 @@ export function getTransactionsParams({
 export function getEventsParams({
   page,
   size,
+  searchAfter,
 
   address,
   identifier,
@@ -114,7 +116,7 @@ export function getEventsParams({
   isCount = false
 }: GetEventsType) {
   const params: AdapterProviderPropsType['params'] = {
-    ...(isCount ? {} : getPageParams({ page, size })),
+    ...(isCount ? {} : getPageParams({ page, size, searchAfter })),
     ...(address ? { address } : {}),
     ...(identifier ? { identifier } : {}),
     ...(txHash ? { txHash } : {}),
@@ -209,21 +211,29 @@ export function getNodeParams({
 export function getBlocksParams({
   page,
   size,
+  searchAfter,
   fields = BLOCKS_FIELDS.join(','),
 
   shard,
   nonce,
   epoch,
   proposer,
-  withProposerIdentity = true
+  withProposerIdentity = true,
+
+  // not on api
+  isCount = false
 }: GetBlocksType) {
   const params: AdapterProviderPropsType['params'] = {
-    ...getPageParams({ page, size }),
+    ...(isCount
+      ? {}
+      : {
+          ...getPageParams({ page, size, searchAfter }),
+          ...(withProposerIdentity ? { withProposerIdentity } : {}),
+          ...(fields !== undefined ? { fields } : {})
+        }),
     ...(proposer ? { proposer } : {}),
-    ...(withProposerIdentity ? { withProposerIdentity } : {}),
-    ...getShardAndEpochParams(shard, epoch),
     ...(nonce !== undefined ? { nonce } : {}),
-    ...(fields !== undefined ? { fields } : {})
+    ...getShardAndEpochParams(shard, epoch)
   };
 
   return params;
@@ -245,6 +255,7 @@ export function getProviderParams({
 export function getTokensParams({
   page,
   size,
+  searchAfter,
   sort,
   order,
   fields,
@@ -265,7 +276,7 @@ export function getTokensParams({
     ...(isCount
       ? {}
       : {
-          ...getPageParams({ page, size }),
+          ...getPageParams({ page, size, searchAfter }),
           ...(sort !== undefined ? { sort } : {}),
           ...(order !== undefined ? { order } : {}),
           ...(fields !== undefined ? { fields } : {}),
@@ -284,6 +295,7 @@ export function getTokensParams({
 export function getCollectionsParams({
   page,
   size,
+  searchAfter,
   sort,
   order,
   fields,
@@ -303,7 +315,7 @@ export function getCollectionsParams({
     ...(isCount
       ? {}
       : {
-          ...getPageParams({ page, size }),
+          ...getPageParams({ page, size, searchAfter }),
           ...(sort !== undefined ? { sort } : {}),
           ...(order !== undefined ? { order } : {}),
           ...(fields !== undefined ? { fields } : {}),
@@ -321,6 +333,7 @@ export function getCollectionsParams({
 export function getNftsParams({
   page,
   size,
+  searchAfter,
   sort,
   order,
   fields,
@@ -349,7 +362,7 @@ export function getNftsParams({
     ...(isCount
       ? {}
       : {
-          ...getPageParams({ page, size }),
+          ...getPageParams({ page, size, searchAfter }),
           ...(sort !== undefined ? { sort } : {}),
           ...(order !== undefined ? { order } : {}),
           ...(fields !== undefined ? { fields } : {}),
@@ -390,7 +403,16 @@ export const getShardAndEpochParams = (
   return result;
 };
 
-export const getPageParams = ({ page = 1, size = PAGE_SIZE }: BaseApiType) => {
+export const getPageParams = ({
+  page = 1,
+  size = PAGE_SIZE,
+  searchAfter
+}: BaseApiType) => {
+  // the api rejects the request unless `from` is absent alongside a cursor
+  if (searchAfter) {
+    return { size, searchAfter };
+  }
+
   const from = new BigNumber(page).minus(1).times(size);
   const isMoreThanMax = from.plus(size).isGreaterThan(MAX_RESULTS);
 

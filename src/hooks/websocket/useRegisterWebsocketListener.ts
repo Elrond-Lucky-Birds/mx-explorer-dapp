@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import {
   websocketConnection,
   websocketActiveSubscriptions,
+  websocketEventListeners,
   websocketPendingSubscriptions,
   websocketSubscriptions,
   WebsocketConnectionStatusEnum
@@ -10,6 +11,7 @@ import {
 import { useInitWebsocket } from 'hooks/layout';
 import { WebsocketEventsEnum, WebsocketSubcriptionsEnum } from 'types';
 import { useHasWebsocketUrl } from './useHasWebsocketUrl';
+import { useWebsocketStatus } from './useWebsocketStatus';
 
 export interface RegisterWebsocketListenerType {
   onWebsocketEvent: (response: any) => void;
@@ -17,51 +19,69 @@ export interface RegisterWebsocketListenerType {
   event?: WebsocketEventsEnum;
   config?: Record<string, any>;
   isPaused?: boolean;
+  uuid?: string;
 }
 
 export function useRegisterWebsocketListener({
   onWebsocketEvent,
-  subscription,
+  subscription: subscriptionName,
   event,
   config,
-  isPaused
+  isPaused,
+  uuid = ''
 }: RegisterWebsocketListenerType) {
   const hasWebsocketUrl = useHasWebsocketUrl();
+  const status = useWebsocketStatus();
 
   useInitWebsocket();
 
+  const onWebsocketEventRef = useRef(onWebsocketEvent);
+  onWebsocketEventRef.current = onWebsocketEvent;
+
+  const configRef = useRef(config);
+  configRef.current = config;
+
   useEffect(() => {
-    const websocketConfig = config ?? true;
-    if (!subscription || !event) {
+    if (!subscriptionName || !event) {
       return;
     }
 
     const websocket = websocketConnection.instance;
 
-    const hasSubscription = websocketSubscriptions.has(subscription);
-    const hasPendingSubscription =
-      websocketPendingSubscriptions.has(subscription);
-    const hasActiveSubscription =
-      websocketActiveSubscriptions.has(subscription);
-
     if (
       !websocket ||
       !websocket?.active ||
       isPaused ||
-      websocketConnection.status !== WebsocketConnectionStatusEnum.COMPLETED
+      status !== WebsocketConnectionStatusEnum.COMPLETED
     ) {
       return;
     }
 
-    websocketSubscriptions.add(subscription);
+    const subscription = `${subscriptionName}${uuid}`;
+    const websocketConfig = configRef.current ?? true;
 
-    if (!hasActiveSubscription) {
+    const isStatsEvent = event === WebsocketEventsEnum.statsUpdate;
+    const isCustomEvent = [
+      WebsocketEventsEnum.customTransactionUpdate,
+      WebsocketEventsEnum.customTransferUpdate,
+      WebsocketEventsEnum.customEventUpdate
+    ].includes(event);
+
+    const hasSubscription = websocketSubscriptions.has(subscription);
+
+    if (!websocketActiveSubscriptions.has(subscription)) {
       websocketPendingSubscriptions.add(subscription);
     }
+    websocketSubscriptions.add(subscription);
 
     if (!hasSubscription) {
-      websocket.emit(subscription, websocketConfig, (response: any) => {
-        console.info(`New Websocket Subscription ${subscription}`);
+      websocket.emit(subscriptionName, websocketConfig, (response: any) => {
+        if (import.meta.env.DEV) {
+          console.info(
+            `New Websocket Subscription ${subscriptionName}`,
+            response
+          );
+        }
         if (response?.status !== 'success') {
           websocketSubscriptions.delete(subscription);
           websocketPendingSubscriptions.delete(subscription);
@@ -69,36 +89,70 @@ export function useRegisterWebsocketListener({
       });
     }
 
-    if (hasActiveSubscription || hasPendingSubscription) {
-      return;
+    let entry = websocketEventListeners.get(subscription);
+
+    if (!entry) {
+      const listeners = new Set<{ current: (response: any) => void }>();
+
+      const handler = (response: any) => {
+        if (
+          typeof document !== 'undefined' &&
+          document.hidden &&
+          !(isStatsEvent || isCustomEvent)
+        ) {
+          return;
+        }
+
+        if (websocketPendingSubscriptions.has(subscription)) {
+          websocketPendingSubscriptions.delete(subscription);
+          websocketActiveSubscriptions.add(subscription);
+        }
+
+        listeners.forEach((listener) => listener.current(response));
+      };
+
+      entry = { event, handler, listeners };
+      websocketEventListeners.set(subscription, entry);
+
+      websocket.on(event, handler);
     }
 
-    websocket.on(event, (response: any) => {
-      if (document.hidden) {
+    entry.listeners.add(onWebsocketEventRef);
+    const currentEntry = entry;
+
+    return () => {
+      currentEntry.listeners.delete(onWebsocketEventRef);
+
+      if (currentEntry.listeners.size > 0) {
         return;
       }
 
-      if (websocketPendingSubscriptions.has(subscription)) {
-        websocketPendingSubscriptions.delete(subscription);
-        websocketActiveSubscriptions.add(subscription);
-      }
-      // console.info(`Client ${event}:`, response);
-      onWebsocketEvent(response);
-    });
+      const currentWebsocket = websocketConnection.instance ?? websocket;
 
-    return () => {
-      websocket?.off(event);
+      currentWebsocket.off(currentEntry.event, currentEntry.handler);
+      websocketEventListeners.delete(subscription);
+
       websocketActiveSubscriptions.delete(subscription);
+
+      if (isStatsEvent) {
+        return;
+      }
+
+      currentWebsocket.emit(
+        `un${subscriptionName}`,
+        websocketConfig,
+        (response: any) => {
+          if (import.meta.env.DEV) {
+            console.info(
+              `Unsubscribe Subscription ${subscriptionName}`,
+              response
+            );
+          }
+        }
+      );
+
+      websocketPendingSubscriptions.delete(subscription);
+      websocketSubscriptions.delete(subscription);
     };
-  }, [
-    websocketConnection,
-    websocketSubscriptions,
-    websocketActiveSubscriptions,
-    websocketPendingSubscriptions,
-    websocketConnection.status,
-    hasWebsocketUrl,
-    event,
-    subscription,
-    isPaused
-  ]);
+  }, [status, hasWebsocketUrl, event, subscriptionName, isPaused, uuid]);
 }

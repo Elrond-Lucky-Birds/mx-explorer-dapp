@@ -1,10 +1,11 @@
 import classNames from 'classnames';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import { SingleValue } from 'react-select';
 
 import { PAGE_SIZE, MAX_RESULTS } from 'appConstants';
 import { Select, SelectOptionType } from 'components';
-import { formatBigNumber, stringIsInteger } from 'helpers';
+import { formatBigNumber } from 'helpers';
+import { stringIsInteger } from 'lib';
 import { WithClassnameType } from 'types';
 
 export interface PageSizeUIType extends WithClassnameType {
@@ -67,6 +68,7 @@ export const PageSize = ({
         options={options}
         onChange={onChangeHandler}
         defaultValue={{ label: currentSize, value: currentSize }}
+        aria-label='Records per page'
       />{' '}
       records
     </div>

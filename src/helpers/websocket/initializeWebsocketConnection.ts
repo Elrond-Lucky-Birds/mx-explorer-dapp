@@ -1,28 +1,27 @@
 import { io } from 'socket.io-client';
 
 import {
-  WEBSOCKET_MESSAGE_DELAY,
   WEBSOCKET_RECONNECTION_ATTEMPTS,
   WEBSOCKET_RETRY_INTERVAL,
   WEBSOCKET_TIMEOUT,
   WebsocketConnectionStatusEnum,
   websocketActiveSubscriptions,
   websocketConnection,
+  websocketEventListeners,
   websocketPendingSubscriptions,
   websocketSubscriptions
 } from 'appConstants';
 import { isUpdatesWebsocketInactive } from 'helpers';
-import { WebsocketEventsEnum, WebsocketSubcriptionsEnum } from 'types';
+import { WebsocketEventsEnum } from 'types';
 
-type TimeoutType = ReturnType<typeof setTimeout> | null;
+import { websocketStatusStore } from './websocketStatusStore';
 
 export async function initializeWebsocketConnection(websocketUrl: string) {
-  let messageTimeout: TimeoutType = null;
   const isWebsocketInactive = isUpdatesWebsocketInactive();
 
   // Update socket status in store for status subscription
   const updateSocketStatus = (status: WebsocketConnectionStatusEnum) => {
-    websocketConnection.status = status;
+    websocketStatusStore.setStatus(status);
     console.info('Websocket Status:', status);
   };
 
@@ -30,18 +29,11 @@ export async function initializeWebsocketConnection(websocketUrl: string) {
     websocketSubscriptions.clear();
     websocketPendingSubscriptions.clear();
     websocketActiveSubscriptions.clear();
-    Object.values(WebsocketSubcriptionsEnum).forEach(
-      (sub) => websocketConnection.instance?.off(sub)
-    );
-  };
 
-  const handleMessageReceived = (message: string) => {
-    if (messageTimeout) {
-      clearTimeout(messageTimeout);
-    }
-    messageTimeout = setTimeout(() => {
-      console.info('Websocket Message:', message);
-    }, WEBSOCKET_MESSAGE_DELAY);
+    websocketEventListeners.forEach(({ event, handler }) => {
+      websocketConnection.instance?.off(event, handler);
+    });
+    websocketEventListeners.clear();
   };
 
   const closeConnection = () => {
@@ -57,10 +49,6 @@ export async function initializeWebsocketConnection(websocketUrl: string) {
 
     updateSocketStatus(WebsocketConnectionStatusEnum.NOT_INITIALIZED);
     websocketConnection.instance = null;
-
-    if (messageTimeout) {
-      clearTimeout(messageTimeout);
-    }
   };
 
   const initializeConnection = async () => {

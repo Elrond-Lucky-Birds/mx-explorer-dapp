@@ -1,5 +1,6 @@
 export * from './addressIsBech32';
 export * from './isContract';
+export * from './isCursorPage';
 export * from './isEgldToken';
 export * from './isEllipsisActive';
 export * from './isHash';
@@ -11,5 +12,3 @@ export * from './isUpdatesWebsocketInactive';
 export * from './isUtf8';
 export * from './isValidAccountTokenValue';
 export * from './isValidTokenPrice';
-export * from './stringIsFloat';
-export * from './stringIsInteger';

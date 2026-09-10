@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 
 import { AccountsTable } from 'components';
 import { isValidTokenPrice } from 'helpers';
@@ -14,7 +14,7 @@ export const TokenDetailsAccounts = () => {
   const { token } = useSelector(tokenSelector);
   const { id: activeNetworkId } = useSelector(activeNetworkSelector);
 
-  const { page, size } = useGetPage();
+  const { page, size, searchAfter } = useGetPage();
   const { getTokenAccounts, getTokenAccountsCount } = useAdapter();
 
   const {
@@ -31,8 +31,8 @@ export const TokenDetailsAccounts = () => {
 
   const fetchAccounts = () => {
     Promise.all([
-      getTokenAccounts({ tokenId: identifier, page, size }),
-      getTokenAccountsCount({ tokenId: identifier })
+      getTokenAccounts({ token: identifier, page, size, searchAfter }),
+      getTokenAccountsCount({ token: identifier })
     ]).then(([tokenAccountsData, tokenAccountsCountData]) => {
       if (tokenAccountsData.success && tokenAccountsCountData.success) {
         setAccounts(tokenAccountsData.data);

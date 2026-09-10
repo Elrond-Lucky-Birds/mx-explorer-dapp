@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams, Navigate } from 'react-router';
 
 import { Loader, PageState } from 'components';
 import { isHash } from 'helpers';
@@ -21,7 +21,7 @@ export const BlockDetails = () => {
 
   const fetchBlock = async () => {
     const { success, data } = await getBlock(blockId);
-    if (success && data?.nonce && data?.shard !== undefined) {
+    if (success && data?.nonce !== undefined && data?.shard !== undefined) {
       const { data: blocksData } = await getBlocks({
         nonce: data.nonce + 1,
         shard: data.shard,

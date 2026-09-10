@@ -1,15 +1,26 @@
 import axios from 'axios';
 
-import { AdapterProviderPropsType, AdapterProviderType } from 'types/adapter.types';
-
 // Module-level cache for herotag data
 const herotagCache = new Map<string, string | null>();
+import { AdapterProviderPropsType, AdapterProviderType } from 'types/adapter.types';
 
-const api: AdapterProviderType = ({ baseUrl, url, params, timeout }) => {
+const api: AdapterProviderType = ({
+  baseUrl,
+  url,
+  params,
+  timeout,
+  signal,
+  headers
+}) => {
   if (!baseUrl) {
     return Promise.resolve();
   }
-  return axios.get(`${baseUrl}${url}`, { params, timeout });
+  return axios.get(`${baseUrl}${url}`, {
+    params,
+    timeout,
+    signal,
+    headers
+  });
 };
 
 // Helper function to fetch herotag data

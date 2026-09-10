@@ -13,6 +13,7 @@ export interface EventType {
   txOrder: number;
   order: number;
   timestamp: number;
+  searchAfter?: string;
 }
 
 export interface UIEventType extends EventType {
@@ -22,6 +23,10 @@ export interface UIEventType extends EventType {
 export interface EventsSliceType extends SliceType {
   events: UIEventType[];
   eventsCount: number | typeof ELLIPSIS;
+}
+
+export interface CustomEventsSliceType extends EventsSliceType {
+  uuid?: string;
 }
 
 export enum TransactionEventIdentifiersEnum {

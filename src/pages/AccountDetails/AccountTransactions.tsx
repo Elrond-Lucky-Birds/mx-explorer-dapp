@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 
 import { TransactionsTable } from 'components';
-import { useAdapter, useFetchTransactions } from 'hooks';
+import { useAdapter, useFetchCustomTransfers } from 'hooks';
 import { AccountTabs } from 'layouts/AccountLayout/AccountTabs';
 import { activeNetworkSelector, accountSelector } from 'redux/selectors';
+import { WebsocketEventsEnum, WebsocketSubcriptionsEnum } from 'types';
 
 export const AccountTransactions = () => {
   const [searchParams] = useSearchParams();
@@ -13,7 +14,7 @@ export const AccountTransactions = () => {
   const { id: activeNetworkId } = useSelector(activeNetworkSelector);
 
   const { account } = useSelector(accountSelector);
-  const { address, txCount, balance } = account;
+  const { address } = account;
 
   const {
     fetchTransactions,
@@ -21,18 +22,22 @@ export const AccountTransactions = () => {
     totalTransactions,
     isDataReady,
     dataChanged
-  } = useFetchTransactions({
+  } = useFetchCustomTransfers({
+    uuid: address,
     dataPromise: getAccountTransfers,
     dataCountPromise: getAccountTransfersCount,
+    subscription: WebsocketSubcriptionsEnum.subscribeCustomTransfers,
+    event: WebsocketEventsEnum.customTransferUpdate,
     filters: {
       address,
       withTxsRelayedByAddress: true
-    }
+    },
+    websocketConfig: { address }
   });
 
   useEffect(() => {
     fetchTransactions();
-  }, [activeNetworkId, address, txCount, balance]);
+  }, [activeNetworkId, address]);
 
   useEffect(() => {
     fetchTransactions(Boolean(searchParams.toString()));

@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 
 import { TransactionDirectionBadge } from 'components';
 import { getTransactionDirection } from 'helpers';
@@ -7,11 +7,13 @@ import { TransactionDirectionEnum, UITransactionType } from 'types';
 export interface TransactionDirectionType {
   transaction: UITransactionType;
   address?: string;
+  hasHighlight?: boolean;
 }
 
 export const TransactionDirection = ({
   transaction,
-  address
+  address,
+  hasHighlight
 }: TransactionDirectionType) => {
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -59,11 +61,7 @@ export const TransactionDirection = ({
     }
   };
 
-  const TransactionDirectionWrapper = ({
-    children
-  }: {
-    children: React.ReactNode;
-  }) => {
+  const renderTransactionDirectionWrapper = (children: React.ReactNode) => {
     return (
       <>
         {isClickable ? (
@@ -85,9 +83,12 @@ export const TransactionDirection = ({
 
   return (
     <div className='d-inline-block'>
-      <TransactionDirectionWrapper>
-        <TransactionDirectionBadge direction={direction} hasHighlight />
-      </TransactionDirectionWrapper>
+      {renderTransactionDirectionWrapper(
+        <TransactionDirectionBadge
+          direction={direction}
+          hasHighlight={hasHighlight}
+        />
+      )}
     </div>
   );
 };
